@@ -1,28 +1,25 @@
 import cv2
-import pyautogui
 import numpy as np
+import pyautogui
+import time
+from PIL import Image
+from io import BytesIO
 
-def record_video(output_file, duration):
+def record_video(video_file, driver, duration):
     screen_width, screen_height = pyautogui.size()
-    # Define the codec and create a VideoWriter object
-    fourcc = cv2.VideoWriter_fourcc(*"XVID")
-    out = cv2.VideoWriter(output_file, fourcc, 20.0, (screen_width, screen_height))
+    out = cv2.VideoWriter(video_file, cv2.VideoWriter_fourcc(*"mp4v"), 30.0, (screen_width, screen_height))
 
-    # Start recording
-    start_time = pyautogui.time()
-    while pyautogui.time() - start_time < duration:
+    start_time = time.time()
+    start_time = time.time()
+    while time.time() - start_time < duration:
         # Capture the screen frame
-        img = pyautogui.screenshot()
+        screenshot = driver.get_screenshot_as_png()
+        img = Image.open(BytesIO(screenshot))
         frame = cv2.cvtColor(np.array(img), cv2.COLOR_RGB2BGR)
 
-        # Write the frame to the video file
+        # Write the frame to the output file
         out.write(frame)
 
-    # Release the video writer and close the output file
+    # Release the video writer
     out.release()
-    cv2.destroyAllWindows()
 
-# Usage example
-output_file = "output.avi"
-duration = 10  # Recording duration in seconds
-record_video(output_file, duration)
