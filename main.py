@@ -4,8 +4,10 @@ from data_processing.google_sheets_processing import read_links_from_google_shee
 from automated_browsing.auto_browse import automate_browsing
 from youtube_upload.youtube_upload import upload_to_youtube
 from threading import Thread
+import os
 
 def main():
+    
     # Step 4: Data Processing - Read Links from Google Sheets
     sheet_name = "Sheet1"  # Name of the sheet in the Google Sheets document
     credentials_file = "credentials.json"  # Path to the JSON credentials file
@@ -20,10 +22,10 @@ def main():
 
     # Step 6: Video Recording
     video_file = "output.mp4"
-    duration = 10  # Recording duration in seconds
+    duration = 30  # Recording duration in seconds
 
     # Start the video recording (in the main thread)
-    record_video_thread = Thread(target=record_video, args=(video_file, driver, duration))
+    record_video_thread = Thread(target=record_video, args=(video_file, duration))
     record_video_thread.start()
 
     # Wait for both browsing and video recording to finish
