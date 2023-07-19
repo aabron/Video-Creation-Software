@@ -11,43 +11,46 @@ import time
 
 driver = None
 
-def automate_browsing(links):
+def automate_browsing(links, duration):
     global driver
     
-    # Configure Chrome options for headless browsing
     chrome_options = Options()
-    chrome_options.add_argument("--headless")  # Run Chrome in headless mode
-    chrome_options.add_argument("--disable-gpu")  # Disable GPU acceleration
-
-    # Set path to your Chrome driver executable
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--disable-extensions")
+    chrome_options.add_argument("--disable-infobars")
+    chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    chrome_options.add_argument("--window-size=1920,1080")
+    
     chrome_driver_path = r"C:\Users\8068programmer\Desktop\Projects\Extras\chromedriver.exe"
 
-    # Initialize Chrome driver
     driver = webdriver.Chrome(service=Service(chrome_driver_path), options=chrome_options)
+    
     try:
-        for link in links:
-            # Open the Instagram link
-            driver.get(link)
+    
+        driver.get(links)
 
-            # Simulate scrolling action
-            scroll_element = driver.find_element(By.TAG_NAME, 'body')
-            for _ in range(5):  # Scroll 5 times, adjust the number as needed
-                scroll_element.send_keys(Keys.PAGE_DOWN)
-                WebDriverWait(driver, 10).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
-                time.sleep(2)
+        last_height = driver.execute_script("return document.body.scrollHeight")
+
+        start_time = time.time()
+        
+        while time.time() - start_time < duration:
+            driver.execute_script("window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});")
+            time.sleep(4)
+            
+            driver.execute_script("window.scrollTo({top: 0, behavior: 'smooth'});")
+            time.sleep(4)
+            
+            new_height = driver.execute_script("return document.body.scrollHeight")
+            
+            # if new_height == last_height:
+            #     break
+            
+            # last_height = new_height
 
     except NoSuchElementException as e:
         print("Element not found: ", e)
 
     finally:
-        global browsing_complete
-        browsing_complete = True
-        # Quit the browser
-        driver.quit()
-        
-    return driver
-        
-        
-def isBrowsingComplete():
-    return browsing_complete
+        driver.quit
 
+    return driver
