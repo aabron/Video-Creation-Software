@@ -10,7 +10,7 @@ def main():
     
     sheet_name = "Sheet1"  
     credentials_file = "credentials.json"  
-    sheet_key = "1l7alNgUJJjW9yO6xSyH6Hqfd7GSqD0UnW4XC6x2Q1ng"  
+    sheet_key ="some credentials key"  
     links = read_links_from_google_sheets(sheet_name, credentials_file, sheet_key)
 
     for link in links:
