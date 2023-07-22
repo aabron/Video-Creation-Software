@@ -1,36 +1,56 @@
+from pyvirtualdisplay.smartdisplay import SmartDisplay
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.chrome.options import Options
-from data_processing.google_sheets_processing import read_links_from_google_sheets
+from selenium.common.exceptions import NoSuchElementException
+import time
 
-# set the path to your chromedriver executable
-webdriver_service = Service('path_to_chromedriver')  # replace 'path_to_chromedriver' with the actual path
+driver = None
 
-def automate_browsing(sheet_name, credentials_file, sheet_key):
-    # read links from Google Sheets
-    links = read_links_from_google_sheets(sheet_name, credentials_file, sheet_key)
-
-    # configure Chrome options
+def automate_browsing(links, duration):
+    global driver
+    
     chrome_options = Options()
-    chrome_options.add_argument('--headless')  # Run Chrome in headless mode
+    chrome_options.add_argument("--disable-gpu")
+    chrome_options.add_argument("--disable-extensions")
+    chrome_options.add_argument("--disable-infobars")
+    chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+    chrome_options.add_argument("--window-size=1920,1080")
+    
+    chrome_driver_path = r"C:\Users\8068programmer\Desktop\Projects\Extras\chromedriver.exe"
 
-    # set up the ChromeDriver with the configured options
-    driver = webdriver.Chrome(service=webdriver_service, options=chrome_options)
+    driver = webdriver.Chrome(service=Service(chrome_driver_path), options=chrome_options)
+    
+    try:
+    
+        driver.get(links)
 
-    for link in links:
-        # open the Instagram link
-        driver.get(link)
+        last_height = driver.execute_script("return document.body.scrollHeight")
 
-        # simulate scrolling action
-        scroll_element = driver.find_element(By.TAG_NAME, 'body')
-        for _ in range(5):  # scroll 5 times, adjust the number as needed
-            scroll_element.send_keys(Keys.PAGE_DOWN)
-            WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.TAG_NAME, 'body')))
+        start_time = time.time()
+        
+        while time.time() - start_time < duration:
+            driver.execute_script("window.scrollTo({top: document.body.scrollHeight, behavior: 'smooth'});")
+            time.sleep(4)
+            
+            driver.execute_script("window.scrollTo({top: 0, behavior: 'smooth'});")
+            time.sleep(4)
+            
+            new_height = driver.execute_script("return document.body.scrollHeight")
+            
+            # if new_height == last_height:
+            #     break
+            
+            # last_height = new_height
 
-    # close the browser
-    driver.quit()
+    except NoSuchElementException as e:
+        print("Element not found: ", e)
 
+    finally:
+        driver.quit
+
+    return driver
