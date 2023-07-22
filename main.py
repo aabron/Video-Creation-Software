@@ -1,8 +1,8 @@
 from video_recording.video_recording import record_video
-from video_editing.video_editing import edit_video
+from video_editing.video_editing import overlay_videos
 from data_processing.google_sheets_processing import read_links_from_google_sheets
 from automated_browsing.auto_browse import automate_browsing
-from youtube_upload.youtube_upload import upload_to_youtube
+from youtube_upload.youtube_upload import upload_to_youtube, authenticate_youtube
 from threading import Thread
 import os
 
@@ -10,9 +10,12 @@ def main():
     
     sheet_name = "Sheet1"  
     credentials_file = "credentials.json"  
-    sheet_key ="some credentials key"  
+    sheet_key ="1l7alNgUJJjW9yO6xSyH6Hqfd7GSqD0UnW4XC6x2Q1ng"  
     links = read_links_from_google_sheets(sheet_name, credentials_file, sheet_key)
-
+    title = "test"
+    description = "test"
+    
+    
     for link in links:
         video_file = 'output.mp4'
         duration = 20  # in seconds
@@ -26,16 +29,14 @@ def main():
         browsing_thread.join()
         record_video_thread.join()
 
-        overlay_file = "overlay_video.mp4"
+        overlay_file = "overlay_video.mov"
         edited_file = "edited_video.mp4"
-        edit_video(video_file, overlay_file, edited_file)
-        break
-        # video_file = "edited_video.mp4"
-        # credentials_file = "credentials.json"
-        # api_service_name = 'youtube'
-        # api_version = 'v3'
-        # video_id = upload_to_youtube(video_file, credentials_file, api_service_name, api_version)
-        # print(f"Video uploaded successfully! Video ID: {video_id}")
+        overlay_videos(video_file, overlay_file, edited_file)
+    
+        credentials_file = 'client_secret.json'
+        youtube = authenticate_youtube(credentials_file)
+        video_id = upload_to_youtube(edited_file, youtube, title, description)
+        print(f"Video uploaded successfully! Video ID: {video_id}")
 
 if __name__ == "__main__":
     main()

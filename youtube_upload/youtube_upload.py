@@ -1,30 +1,51 @@
 import os
 from googleapiclient.discovery import build
 from google.oauth2 import service_account
+import os
+import google_auth_oauthlib.flow
+import googleapiclient.discovery
+import googleapiclient.errors
 
-def upload_to_youtube(video_file, credentials_file, api_service_name, api_version):
-    credentials = service_account.Credentials.from_service_account_file(
-        credentials_file, scopes=['https://www.googleapis.com/auth/youtube.upload']
+def authenticate_youtube(credentials_file):
+    # Load credentials from the file
+    flow = google_auth_oauthlib.flow.InstalledAppFlow.from_client_secrets_file(
+        credentials_file, ['https://www.googleapis.com/auth/youtube.upload']
     )
 
-    youtube = build(api_service_name, api_version, credentials=credentials)
+    # Authenticate and authorize the user
+    credentials = flow.run_local_server()
 
+    # Build the YouTube API client
+    youtube = googleapiclient.discovery.build('youtube', 'v3', credentials=credentials)
+
+    return youtube
+
+
+def upload_to_youtube(video_file, youtube, title, description):
     request_body = {
         'snippet': {
-            'title': 'My Uploaded Video',
-            'description': 'Description of my video',
-            'tags': ['tag1', 'tag2']
+            'title': title,
+            'description': description,
+            'tags': ['your', 'tags', 'here'],
+            'categoryId': '22'  
         },
         'status': {
-            'privacyStatus': 'private'
+            'privacyStatus': 'private'  
         }
     }
 
-    response = youtube.videos().insert(
-        part='snippet,status',
-        body=request_body,
-        media_body=video_file
-    ).execute()
+    # Upload the video
+    try:
+        response = youtube.videos().insert(
+            part='snippet,status',
+            body=request_body,
+            media_body=video_file
+        ).execute()
 
-    video_id = response['id']
-    return video_id
+        video_id = response['id']
+        print(f'Video uploaded successfully! Video ID: {video_id}')
+        return video_id
+
+    except googleapiclient.errors.HttpError as e:
+        print(f'An error occurred while uploading the video: {e}')
+        return None
