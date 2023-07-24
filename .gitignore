@@ -1,4 +1,7 @@
+credentials.json
 *.json
 *.mp4
 *.webm
 *.mov
+*.exe
+/dist
