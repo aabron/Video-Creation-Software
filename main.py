@@ -1,5 +1,5 @@
 from video_recording.video_recording import record_video
-from video_editing.video_editing import overlay_videos
+from video_editing.video_editing import overlay_videos, overlay_transparent
 from data_processing.google_sheets_processing import read_links_from_google_sheets, add_youtube_link_back
 from automated_browsing.auto_browse import automate_browsing
 from youtube_upload.youtube_upload import upload_to_youtube, authenticate_youtube
@@ -28,6 +28,8 @@ class MyMainWindow(QMainWindow):
         self.google_sheets_id.setPlaceholderText("Enter Google Sheet ID")
         self.sheet_name = QLineEdit(self)
         self.sheet_name.setPlaceholderText("Enter Individual Sheet Name")
+        self.sheet_column_number_input = QLineEdit(self)
+        self.sheet_column_number_input.setPlaceholderText("Enter Column number for Youtube Links")
         self.youtube_title = QLineEdit(self)
         self.starting_row = QLineEdit(self)
         self.starting_row.setPlaceholderText("Enter Starting Row")
@@ -55,6 +57,8 @@ class MyMainWindow(QMainWindow):
         sheets_layout.addWidget(self.sheet_name)
         sheets_layout.addWidget(QLabel("Starting Row:"))
         sheets_layout.addWidget(self.starting_row)
+        sheets_layout.addWidget(QLabel("Column Number:"))
+        sheets_layout.addWidget(self.sheet_column_number_input)
         sheets_group.setLayout(sheets_layout)
         
         youtube_group = QGroupBox("YouTube Video")
@@ -110,15 +114,15 @@ class MyMainWindow(QMainWindow):
             browsing_thread.join()
             record_video_thread.join()
 
-            overlay_file = "overlay_video.mov"
+            overlay_file = "overlay_video.mp4"
             edited_file = "edited_video.mp4"
-            overlay_videos(video_file, overlay_file, edited_file)
+            overlay_transparent(video_file, overlay_file, edited_file)
         
             client_secret = 'client_secret.json'
             youtube = authenticate_youtube(client_secret)
             video_url = upload_to_youtube(edited_file, youtube, title, description)
             print(f"Video uploaded successfully! Video ID: {video_url}")
-            add_youtube_link_back(sheet_name, credentials_file, sheet_key, video_url, i)
+            add_youtube_link_back(sheet_name, credentials_file, sheet_key, video_url, i, int(self.sheet_column_number_input.text()))
             i += 1
             
 

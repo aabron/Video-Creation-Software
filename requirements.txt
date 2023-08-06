@@ -1,0 +1,8 @@
+opencv-python
+pyautogui
+moviepy
+pandas
+openpyxl
+selenium
+google-api-python-client
+pyqt5
